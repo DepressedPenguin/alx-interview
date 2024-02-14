@@ -1,25 +1,19 @@
 #!/usr/bin/node
 
 const request = require('request');
+const arg3 = process.argv[2];
 
-request('https://swapi-api.hbtn.io/api/films/' + process.argv[2], function (err, res, body) {
+request('https://swapi-api.hbtn.io/api/films/' + arg3, function (err, res, body) {
   if (err) throw err;
-
-  try {
-    const filmData = JSON.parse(body);
-    const actors = filmData.characters;
-
-    if (!Array.isArray(actors)) {
-      throw new Error('Invalid or missing "characters" field in API response.');
-    }
-
-    for (const actorURL of actors) {
-      request(actorURL, function (err, res, body) {
-        if (err) throw err;
-        console.log(JSON.parse(body).name);
-      });
-    }
-  } catch (error) {
-    console.error('Error parsing or processing API response:', error.message);
-  }
+  const actors = JSON.parse(body).characters;
+  exactOrder(actors, 0);
 });
+
+const exactOrder = (actors, x) => {
+  if (x === actors.length) return;
+  request(actors[x], function (err, res, body) {
+    if (err) throw err;
+    console.log(JSON.parse(body).name);
+    exactOrder(actors, x + 1);
+  });
+};
